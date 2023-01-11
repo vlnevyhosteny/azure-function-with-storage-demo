@@ -1,6 +1,3 @@
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -8,39 +5,50 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
+using System;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace AzureFunctionsDemo.Upload
 {
     public class RequestUploadFunction
     {
         private readonly ILogger<RequestUploadFunction> _logger;
+        private readonly IUploadService _uploadService;
 
-        public RequestUploadFunction(ILogger<RequestUploadFunction> log)
+        public RequestUploadFunction(ILogger<RequestUploadFunction> logger, IUploadService uploadService)
         {
-            _logger = log;
+            _logger = logger;
+            _uploadService = uploadService;
         }
 
         [FunctionName("RequestUploadFunction")]
-        [OpenApiOperation(operationId: "Run", tags: new[] { "name" })]
-        [OpenApiParameter(name: "name", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The **Name** parameter")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "The OK response")]
+        [OpenApiOperation(operationId: "Run", tags: new[] { "user" })]
+        [OpenApiParameter(name: "user", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "Identification of user that uploads file")]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(RequestUploadFunctionResponse), Description = "Returns requested upload url")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            string name = req.Query["name"];
+            string user = req.Query["user"];
 
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
+            try
+            {
+                string uploadUrl = await this._uploadService.GetUploadUrl(user);
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
+                return new OkObjectResult(new RequestUploadFunctionResponse
+                {
+                    UploadUrl = uploadUrl,
+                });
+            } 
+            catch(Exception e)
+            {
+                _logger.LogError(e, "Failed to get upload url");
 
-            return new OkObjectResult(responseMessage);
+                return new InternalServerErrorResult();
+            }
         }
     }
 }

@@ -9,8 +9,6 @@ namespace AzureFunctionsDemo.Blob
 {
     public class BlobStorageService : IBlobStorageService
     {
-        public const string CONTAINER_NAME = "azurefunctionsdemo";
-
         private readonly BlobServiceClient _blobServiceClient;
 
         public BlobStorageService(BlobServiceClient blobServiceClient)

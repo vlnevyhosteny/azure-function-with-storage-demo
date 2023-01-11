@@ -20,7 +20,7 @@ namespace AzureFunctionsDemo.Upload
 
         public async Task<string> GetUploadUrl(string userIdentification)
         {
-            return await _blobStorageService.GetUploadUrlWithSaS(BlobStorageService.CONTAINER_NAME, this.composeFileName(userIdentification));
+            return await _blobStorageService.GetUploadUrlWithSaS(Constants.CONTAINER_NAME, this.composeFileName(userIdentification));
         }
 
         private string composeFileName(string userIdentification) => $"{userIdentification}-${Guid.NewGuid()}.csv";

@@ -1,0 +1,27 @@
+@startuml Sequence
+
+actor User
+boundary RequestUploadUrlFunction
+collections Blob
+boundary ProcessNewFileFunction
+queue Queue
+boundary ProcessRowFunction
+database Table
+
+User -> RequestUploadUrlFunction ++ : Request upload URL
+RequestUploadUrlFunction <-> Blob : Get SaS
+RequestUploadUrlFunction -> User --
+
+User -> Blob : Upload File
+
+Blob -> ProcessNewFileFunction ++ : Trigger after upload
+loop over rows
+  ProcessNewFileFunction -> Queue : Send
+end
+deactivate ProcessNewFileFunction
+
+Queue <- ProcessRowFunction
+activate ProcessRowFunction
+ProcessRowFunction -> Table -- : Upsert
+
+@enduml

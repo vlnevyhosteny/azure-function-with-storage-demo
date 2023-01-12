@@ -5,6 +5,8 @@ using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Text.Unicode;
+using System.Text;
 
 namespace AzureFunctionsDemo.File
 {
@@ -35,9 +37,9 @@ namespace AzureFunctionsDemo.File
 
                 try
                 {
-                    FileRow fileRow = ParseFileRow(line);
+                    FileRowMessage fileRow = ParseFileRow(line);
 
-                    await queueClient.SendMessageAsync(JsonSerializer.Serialize(fileRow));
+                    await queueClient.SendMessageAsync(Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(fileRow))));
                 }
                 catch (Exception ex)
                 {
@@ -46,7 +48,7 @@ namespace AzureFunctionsDemo.File
             }
         }
 
-        private static FileRow ParseFileRow(string row)
+        private static FileRowMessage ParseFileRow(string row)
         {
             var tokens = row.Split(',');
 

@@ -11,5 +11,7 @@ namespace AzureFunctionsDemo
         public const string FILE_ROWS_QUEUE_NAME = "file-rows-queue";
 
         public const string CONTAINER_NAME = "azurefunctionsdemo";
+
+        public const string PEOPLE_TABLE_NAME = "people";
     }
 }

@@ -1,5 +1,7 @@
-﻿using AzureFunctionsDemo.Blob;
+﻿using Azure.Data.Tables;
+using AzureFunctionsDemo.Blob;
 using AzureFunctionsDemo.File;
+using AzureFunctionsDemo.Row;
 using AzureFunctionsDemo.Upload;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Azure;
@@ -13,13 +15,16 @@ namespace AzureFunctionsDemo
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            // TODO: move url to external configuration
+            string azuriteConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;";
+
             builder.Services.AddAzureClients(clientBuilder =>
             {
-                // TODO: move url to external configuration
-                string azuriteConnectionString = "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;";
                 clientBuilder.AddBlobServiceClient(azuriteConnectionString);
 
                 clientBuilder.AddQueueServiceClient(azuriteConnectionString);
+
+                clientBuilder.AddTableServiceClient(azuriteConnectionString);
             });
 
             builder.Services.AddScoped<IUploadService, UploadService>();
@@ -27,6 +32,8 @@ namespace AzureFunctionsDemo
             builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
             builder.Services.AddScoped<IProcessFileService, ProcessFileService>();
+
+            builder.Services.AddScoped<IProcessRowService, ProcessRowService>();
         }
     }
 }

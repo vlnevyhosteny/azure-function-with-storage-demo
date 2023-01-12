@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AzureFunctionsDemo.File
 {
-    internal class FileRow
+    internal class FileRowMessage
     {
         public int Id { get; set; }
 
